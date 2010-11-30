@@ -453,14 +453,14 @@ class PokerHand
 
     result = base.inject(['',nil]) do |(delta_hand, prev_card), card|
       if (prev_card)
-        delta = prev_card - card.face
+        delta = prev_card - card
       else
         delta = 0
       end
       # does not really matter for my needs
       delta = 'x' if (delta > 9 || delta < 0)
       delta_hand += delta.to_s + card.to_s + ' '
-      [delta_hand, card.face]
+      [delta_hand, card]
     end
 
     # we just want the delta transform, not the last cards face too
