@@ -76,6 +76,7 @@ class Card
     self
   end
 
+  # Subtraction only makes sense when comparing face values
   def - card2
     FACES.index(@face) - FACES.index(card2.face)
   end
