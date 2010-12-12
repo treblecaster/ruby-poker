@@ -15,7 +15,7 @@ class TestCard < Test::Unit::TestCase
 
   def test_class_face_value
     assert_nil(Card.face_value('L'))
-    assert_equal(12, Card.face_value('A'))
+    assert_equal('A', Card.face_value('A'))
   end
 
   def test_build_from_value

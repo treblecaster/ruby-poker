@@ -36,7 +36,7 @@ class PokerHand
   #
   #     PokerHand.new("3d 5c 8h Ks").by_suit.just_cards   # => "Ks 8h 3d 5c"
   def by_suit
-    PokerHand.new(@hand.sort_by { |c| [c.suit, c.face] }.reverse)
+    PokerHand.new(@hand.sort_by { |c| [Card::SUITS.index(c.suit), c] }.reverse)
   end
 
   # Returns a new PokerHand object with the cards sorted by value
@@ -44,7 +44,8 @@ class PokerHand
   #
   #     PokerHand.new("3d 5c 8h Ks").by_face.just_cards   # => "Ks 8h 5c 3d"
   def by_face
-    PokerHand.new(@hand.sort_by { |c| [c.face, c.suit] }.reverse)
+    # suit sorting is fairly pointless and complex
+    PokerHand.new(@hand.sort_by { |c| [c, Card::SUITS.index(c.suit)] }.reverse)
   end
 
   # Returns string representation of the hand without the rank
@@ -83,7 +84,7 @@ class PokerHand
   end
 
   def straight_flush?
-    if (md = (/.(.)(.)(?: 1.\2){4}/.match(delta_transform(true))))
+    if (md = (/.(.)(.)(?: 1.\2){4}/.match(delta_flush)))
       high_card = Card::face_value(md[1])
       arranged_hand = fix_low_ace_display(md[0] + ' ' +
           md.pre_match + ' ' + md.post_match)
@@ -141,7 +142,7 @@ class PokerHand
   def straight?
     result = false
     if hand.size >= 5
-      transform = delta_transform
+      transform = delta_straight
       # note we can have more than one delta 0 that we
       # need to shuffle to the back of the hand
       i = 0
@@ -418,7 +419,7 @@ class PokerHand
     PokerHand.new(cards)
   end
 
-  private
+  #private
 
   def check_for_duplicates
     if @hand.size != @hand.uniq.size && !allow_duplicates
@@ -441,15 +442,12 @@ class PokerHand
   # delta transform creates a version of the cards where the delta
   # between card values is in the string, so a regexp can then match a
   # straight and/or straight flush
-  def delta_transform(use_suit = false)
-    aces = @hand.select { |c| c.face == Card::face_value('A') }
-    aces.map! { |c| Card.new(1,c.suit) }
+  def delta_transform(the_hand)
+    aces = the_hand.select { |c| c.face == 'A' }
+    aces.map! { |c| Card.new('A', c.suit) }
 
-    base = if (use_suit)
-      (@hand + aces).sort_by { |c| [c.suit, c.face] }.reverse
-    else
-      (@hand + aces).sort_by { |c| [c.face, c.suit] }.reverse
-    end
+    # duplicate aces on the low end
+    base = the_hand.sort.reverse + aces
 
     result = base.inject(['',nil]) do |(delta_hand, prev_card), card|
       if (prev_card)
@@ -457,6 +455,7 @@ class PokerHand
       else
         delta = 0
       end
+
       # does not really matter for my needs
       delta = 'x' if (delta > 9 || delta < 0)
       delta_hand += delta.to_s + card.to_s + ' '
@@ -465,6 +464,19 @@ class PokerHand
 
     # we just want the delta transform, not the last cards face too
     result[0].chop
+  end
+
+  def delta_flush
+    ret = ''
+    Card::SUITS.each do |s|
+      suit_hand =  @hand.find_all { |c| c.suit == s }
+      ret = ret + delta_transform(suit_hand) + ' '
+    end
+    ret
+  end
+
+  def delta_straight
+    delta_transform @hand
   end
 
   def fix_low_ace_display(arranged_hand)

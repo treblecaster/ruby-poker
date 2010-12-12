@@ -43,9 +43,9 @@ class TestPokerHand < Test::Unit::TestCase
     
     should "raise a clear error with invalid cards" do
       e = assert_raises(ArgumentError) { PokerHand.new('Fc') }
-      assert_match(/"Fc"/, e.message)
+      assert_match(/"F"/, e.message)
       e = assert_raises(ArgumentError) { PokerHand.new('Tp') }
-      assert_match(/"Tp"/, e.message)
+      assert_match(/"p"/, e.message)
     end
 
     should "sort using rank" do
@@ -59,15 +59,17 @@ class TestPokerHand < Test::Unit::TestCase
     end
 
     should "return card sorted by face value" do
-      assert_equal([13, 13, 13, 8, 1], @trips.by_face.hand.collect {|c| c.face})
+      assert_equal(['A', 'A', 'A', '9', '2'],
+                   @trips.by_face.hand.collect {|c| c.face})
     end
 
     should "return cards sorted by suit" do
-      assert_equal([3, 2, 1, 0, 0], @trips.by_suit.hand.collect {|c| c.suit})
+      assert_equal(['s', 'h', 'd', 'c', 'c'],
+                   @trips.by_suit.hand.collect {|c| c.suit})
     end
 
     should "return just the face values of the cards" do
-      assert_equal([1, 8, 13, 13, 13], @trips.face_values)
+      assert_equal(['2', '9', 'A', 'A', 'A'], @trips.face_values)
     end
 
     should "recognize a straight flush" do
@@ -139,7 +141,7 @@ class TestPokerHand < Test::Unit::TestCase
     end
 
     should "return the hand's score" do
-      assert_equal([4, 13, 8, 1], @trips.score[0])
+      assert_equal([4, 'A', '9', '2'], @trips.score[0])
     end
 
     should "be able to match regular expressions" do
@@ -184,12 +186,12 @@ class TestPokerHand < Test::Unit::TestCase
 
     should "detect the two highest pairs when there are more than two" do
       ph = PokerHand.new("7d 7s 4d 4c 2h 2d")
-      assert_equal([3, 6, 3, 1], ph.two_pair?[0])
+      assert_equal([3, '7', '4', '2'], ph.two_pair?[0])
       # Explanation of [3, 6, 3, 1]
       # 3: the number for a two pair
-      # 6: highest pair is two 7's
-      # 3: second highest pair is two 4's
-      # 1: kicker is a 2
+      # 7: highest pair is two 7's
+      # 4: second highest pair is two 4's
+      # 2: kicker is a 2
     end
 
     context "when duplicates are allowed" do
@@ -302,7 +304,7 @@ class TestPokerHand < Test::Unit::TestCase
     context "with a pair" do
 
       should "return 2, followed by the pair value" do
-        assert_equal [2, 5-1], PokerHand.new("5h 5s").pair?[0]
+        assert_equal [2, '5'], PokerHand.new("5h 5s").pair?[0]
       end
 
       context "with a two card hand" do
@@ -327,7 +329,7 @@ class TestPokerHand < Test::Unit::TestCase
         end
 
         should "return the value of the kicker" do
-          assert_equal 8-1, @scoring[2]
+          assert_equal '8', @scoring[2]
         end
       end
 
@@ -342,8 +344,8 @@ class TestPokerHand < Test::Unit::TestCase
         end
 
         should "return the values of the kickers" do
-          assert_equal 8-1, @scoring[2]
-          assert_equal 7-1, @scoring[3]
+          assert_equal '8', @scoring[2]
+          assert_equal '7', @scoring[3]
         end
       end
 
@@ -358,9 +360,9 @@ class TestPokerHand < Test::Unit::TestCase
         end
 
         should "return the values of the kickers" do
-          assert_equal 8-1, @scoring[2]
-          assert_equal 7-1, @scoring[3]
-          assert_equal 6-1, @scoring[4]
+          assert_equal '8', @scoring[2]
+          assert_equal '7', @scoring[3]
+          assert_equal '6', @scoring[4]
         end
       end
     end

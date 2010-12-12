@@ -5,7 +5,7 @@ class Card
 
   def Card.face_value(face)
     face.upcase!
-    FACES.index(face)
+    FACES.include?(face) ? face : nil
   end
 
   private
@@ -14,8 +14,8 @@ class Card
     suit.downcase!
     face.upcase!
 
-    raise ArgumentError, "Invalid suit: #{suit}" unless SUITS.include?(suit)
-    raise ArgumentError, "Invalid face: #{face}" unless FACES.include?(face)
+    raise ArgumentError, "Invalid suit: \"#{suit}\"" unless SUITS.include?(suit)
+    raise ArgumentError, "Invalid face: \"#{face}\"" unless FACES.include?(face)
 
     @suit  = suit
     @face  = face
@@ -78,7 +78,13 @@ class Card
 
   # Subtraction only makes sense when comparing face values
   def - card2
-    FACES.index(@face) - FACES.index(card2.face)
+
+    # If subtracting an Ace, treat it as a low Ace
+    if (card2.face == 'A')
+      FACES.index(@face) - (-1)
+    else
+      FACES.index(@face) - FACES.index(card2.face)
+    end
   end
 
   # Compare the face value of this card with another card. Returns:
